@@ -1,2 +1,2 @@
 # yasu
-Public Yasu repo
+Public moonbird repo
