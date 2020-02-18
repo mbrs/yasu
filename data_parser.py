@@ -15,6 +15,8 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 from datetime import datetime
+from datetime import timedelta
+
 
 
 
@@ -29,10 +31,10 @@ ECG_data_des = pd.read_csv('readings/Stef1_ECG.txt',nrows=10)
 ECG_data = pd.read_csv('readings/Stef1_ECG.txt',sep="\t",skiprows=11)
 ECG_data = ECG_data[0:-1] #remove last row with 'end of exported RAW data' notification
 ECG_data.loc[:,'TIME'] =  pd.to_datetime(ECG_data['TIME'], format='%H:%M:%S') #converting col todatetime
-ECG_starttime = datetime.strptime(ECG_data_des.index[3].split("\t")[1], '%H:%M:%S')
+ECG_starttime = datetime.strptime(ECG_data_des.index[3].split("\t")[1], '%H:%M:%S') #parse times to datetime
+ECG_time_to_add = ECG_starttime - datetime(1900, 1, 1) #datetime to timedelta - to make it addable
+ECG_data.loc[:,'TIME'] = ECG_data.loc[:,'TIME']+ECG_time_to_add
 
-ECG_data.loc[3,'TIME']+datetime.timestamp(ECG_starttime)
-df_data = data_cleaner(df_data)
 
 ##PPG
 PPG_data = pd.read_csv('readings/Stef1_PPG.csv')
@@ -40,10 +42,14 @@ PPG_data.columns = ['Source','idx','ppg_1','ppg_2','timestamp']
 PPG_data_loaded = PPG_data['ppg_2'].str.replace("'"," ").astype(int)
 
 
+'''
 
+Analyse PPG Data for HR and HRV
+
+'''
 _sampleRate = 800
 _subsetLen = 20 # in seconds
-_subsetStart = 300000
+_subsetStart = 300000 # SET
 
 data_loaded_subset = PPG_data_loaded[_subsetStart:_subsetStart+(_subsetLen*_sampleRate)]
 
@@ -81,5 +87,18 @@ m.keys
 
 for key in m.keys():
     print('%s: %f' %(key, m[key]))
+	
+
+
+#wd['RR_list']
+#wd['peaklist_cor']
+#wd['peaklist']
+#wd['binary_peaklist']
+
+wd['binary_peaklist_hasdistance'] = np.zeros(len(wd['binary_peaklist']), dtype=int)
+for i in range(len(wd['binary_peaklist_hasdistance'])):
+	if i > 0:
+		if wd['binary_peaklist'][i-1]==1 and wd['binary_peaklist'][i]==1:
+			wd['binary_peaklist_hasdistance'][i]=1
 
 
